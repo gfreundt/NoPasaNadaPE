@@ -1,0 +1,81 @@
+from datetime import datetime as dt
+
+# local imports
+from src.utils.utils import date_to_db_format
+from src.scrapers import scrape_jnemulta
+
+
+def gather(dash, update_data, full_update):
+
+    full_update.append({"jnemultas":[]})
+    return
+
+    CARD = 10
+
+    # log first action
+    dash.logging(
+        card=CARD,
+        title=f"JNE Multa [{len(update_data)}]",
+        status=1,
+        progress=0,
+        text="Inicializando",
+        lastUpdate="Actualizado:",
+    )
+
+    # iterate on all records that require updating and get scraper results
+    response=[]
+    for counter, (id_member, doc_tipo, doc_num) in enumerate(update_data, start=1):
+
+        retry_attempts = 0
+        while retry_attempts < 3:
+            try:
+                # log action
+                dash.logging(card=CARD, text=f"Procesando: {doc_num}")
+
+                # send request to scraper
+                sunat_response = scrape_jnemulta.browser(doc_tipo, doc_num)
+
+                # update memberLastUpdate table with last update information
+                _now = dt.now().strftime("%Y-%m-%d")
+
+                # update dashboard with progress and last update timestamp
+                dash.logging(
+                    card=CARD,
+                    progress=int((counter / len(update_data)) * 100),
+                    lastUpdate=dt.now(),
+                )
+
+                if not sunat_response:
+                    break
+
+                # adjust date to match db format (YYYY-MM-DD)
+                _n = date_to_db_format(data=sunat_response)
+
+                # add foreign key and current date to scraper response
+                _values = [id_member] + _n + [_now]
+                response.append({"IdMember_FK":id_member, })
+
+                dash.logging(action=f"[ SUNATS ] {"|".join([str(i) for i in _values])}")
+
+                # skip to next record
+                break
+
+            except KeyboardInterrupt:
+                quit()
+
+            except Exception:
+                retry_attempts += 1
+                dash.logging(
+                    card=CARD,
+                    text=f"|ADVERTENCIA| Reintentando [{retry_attempts}/3]: {doc_num}",
+                )
+
+    # log last action
+    dash.logging(
+        card=CARD,
+        title="JNE Multas",
+        progress=100,
+        status=3,
+        text="Inactivo",
+        lastUpdate=dt.now(),
+    )
