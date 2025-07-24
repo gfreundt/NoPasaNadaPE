@@ -4,7 +4,7 @@ import platform
 
 # paths
 if platform.system() == "Linux":
-    NETWORK_PATH = "~/NoPasaNadaPE/server"
+    NETWORK_PATH = " /home/gfreundt/NoPasaNadaPE/server"
 elif platform.system() == "Windows":
     NETWORK_PATH = os.path.join(
         r"\\192.168.68.110",
