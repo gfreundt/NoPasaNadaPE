@@ -24,6 +24,8 @@ class Database:
 
         # attempt tp connect to network production database, default to local if not possible
         # self.conn = sqlite3.connect(DB_LOCAL_PATH, check_same_thread=False)
+
+        print(DB_NETWORK_PATH)
         self.conn = sqlite3.connect(DB_NETWORK_PATH, check_same_thread=False)
         # try:
         #     self.conn = sqlite3.connect(DB_NETWORK_PATH, check_same_thread=False)
