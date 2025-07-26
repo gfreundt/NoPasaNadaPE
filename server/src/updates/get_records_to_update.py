@@ -193,8 +193,18 @@ def get_records_sunats(db_cursor, HLA):
 
 
 def get_records_jnemultas(db_cursor, HLA):
-    # TODO: develop
-    return []
+    # condition to update: will get email and no attempt to update in last 48 hours
+    db_cursor.execute(
+        f"""SELECT IdMember_FK, DocTipo, DocNum FROM _necesitan_mensajes_usuarios
+                WHERE
+                    IdMember_FK
+                    NOT IN
+                    (SELECT IdMember_FK FROM membersLastUpdate
+            		    WHERE LastUpdateJNEMultas >= datetime('now','localtime', '-{HLA} hours'))
+                    AND DocTipo = 'DNI'
+        """
+    )
+    return [(i["IdMember_FK"], i["DocNum"]) for i in db_cursor.fetchall()]
 
 
 def get_records_jneafils(db_cursor, HLA):
